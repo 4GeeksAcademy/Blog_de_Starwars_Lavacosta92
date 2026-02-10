@@ -1,37 +1,83 @@
-// Import necessary hooks and components from react-router-dom and other libraries.
-import { Link, useParams } from "react-router-dom";  // To use link for navigation and useParams to get URL parameters
-import PropTypes from "prop-types";  // To define prop types for this component
-import rigoImageUrl from "../assets/img/rigo-baby.jpg"  // Import an image asset
-import useGlobalReducer from "../hooks/useGlobalReducer";  // Import a custom hook for accessing the global state
+import React, { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
 
-// Define and export the Single component which displays individual item details.
-export const Single = props => {
-  // Access the global state using the custom hook.
-  const { store } = useGlobalReducer()
+export const Single = () => {
+    const { type, theId } = useParams();
+    const [detail, setDetail] = useState(null);
 
-  // Retrieve the 'theId' URL parameter using useParams hook.
-  const { theId } = useParams()
-  const singleTodo = store.todos.find(todo => todo.id === parseInt(theId));
+    useEffect(() => {
 
-  return (
-    <div className="container text-center">
-      {/* Display the title of the todo element dynamically retrieved from the store using theId. */}
-      <h1 className="display-4">Todo: {singleTodo?.title}</h1>
-      <hr className="my-4" />  {/* A horizontal rule for visual separation. */}
+        const getDetails = async () => {
+            const response = await fetch(`https://www.swapi.tech/api/${type}/${theId}`);
+            const data = await response.json();
+            setDetail(data.result.properties);
+        };
+        getDetails();
+    }, [type, theId]);
 
-      {/* A Link component acts as an anchor tag but is used for client-side routing to prevent page reloads. */}
-      <Link to="/">
-        <span className="btn btn-primary btn-lg" href="#" role="button">
-          Back home
-        </span>
-      </Link>
-    </div>
-  );
-};
+ if (!detail) return <div className="text-center mt-5">Loading details...</div>;
 
-// Use PropTypes to validate the props passed to this component, ensuring reliable behavior.
-Single.propTypes = {
-  // Although 'match' prop is defined here, it is not used in the component.
-  // Consider removing or using it as needed.
-  match: PropTypes.object
+const imgCategory = type === "people" ? "characters" : type;
+
+    return (
+        <div className="container mt-5">
+            <div className="row">
+                <div className="col-md-6">
+                    <img
+                        src={`https://raw.githubusercontent.com/Visual-Guide/starwars-visualguide/master/assets/img/${imgCategory}/${theId}.jpg`}
+                        className="img-fluid rounded-start"
+                        alt={detail.name}
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "https://starwars-visualguide.com/assets/img/placeholder.jpg";
+                        }}
+                    />
+                </div>
+                <div className="col-md-6 text-center">
+                    <h1 className="display-4">{detail.name}</h1>
+                    <p className="lead">
+                        {detail.description || "A very important element in the Star Wars universe."}
+                    </p>
+                </div>
+            </div>
+
+            <hr className="text-danger border-2" />
+
+            <div className="row text-danger text-center font-weight-bold">
+
+                {type === "people" && (
+                    <>
+                        <div className="col"><strong>Name</strong><br />{detail.name}</div>
+                        <div className="col"><strong>Birth Year</strong><br />{detail.birth_year}</div>
+                        <div className="col"><strong>Gender</strong><br />{detail.gender}</div>
+                        <div className="col"><strong>Height</strong><br />{detail.height}</div>
+                        <div className="col"><strong>Skin Color</strong><br />{detail.skin_color}</div>
+                        <div className="col"><strong>Eye Color</strong><br />{detail.eye_color}</div>
+                    </>
+                )}
+                {type === "planets" && (
+                    <>
+                        <div className="col"><strong>Climate</strong><br />{detail.climate}</div>
+                        <div className="col"><strong>Population</strong><br />{detail.population}</div>
+                        <div className="col"><strong>Orbital Period</strong><br />{detail.orbital_period}</div>
+                        <div className="col"><strong>Rotation Period</strong><br />{detail.rotation_period}</div>
+                        <div className="col"><strong>Diameter</strong><br />{detail.diameter}</div>
+                    </>
+                )}
+                {type === "vehicles" && (
+                    <>
+                        <div className="col"><strong>Model</strong><br />{detail.model}</div>
+                        <div className="col"><strong>Class</strong><br />{detail.vehicle_class}</div>
+                        <div className="col"><strong>Manufacturer</strong><br />{detail.manufacturer}</div>
+                        <div className="col"><strong>Cost</strong><br />{detail.cost_in_credits}</div>
+                        <div className="col"><strong>Length</strong><br />{detail.length}</div>
+                    </>
+                )}
+            </div>
+
+            <div className="mt-4">
+                <Link to="/" className="btn btn-primary">Back to home</Link>
+            </div>
+        </div>
+    );
 };

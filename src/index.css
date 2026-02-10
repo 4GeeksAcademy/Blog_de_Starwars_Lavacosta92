@@ -1,0 +1,9 @@
+.d-flex.flex-row.overflow-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #dc3545 #f8f9fa;
+}
+.card-img-top {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+}
